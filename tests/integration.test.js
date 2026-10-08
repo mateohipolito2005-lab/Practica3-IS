@@ -1,0 +1,46 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const {createApplication} = require('../src/server');
+async function startApp(){const app=createApplication({dbPath:':memory:'});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));const root=`http://127.0.0.1:${app.server.address().port}`;return{...app,root,stop:async()=>{await new Promise(r=>app.server.close(r));app.close();}};}
+async function api(root,route,{method='GET',body,cookie}={}){const r=await fetch(root+route,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(cookie?{'Cookie':cookie}:{})},body:body?JSON.stringify(body):undefined});return{status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};}
+async function newUser(root,name,email){return api(root,'/api/auth/register',{method:'POST',body:{name,email,password:'Password1234'}});}
+test('flujo extremo: cuenta, materia, tarea, filtros, estado, edición, borrado',async t=>{const {root,stop}=await startApp();t.after(stop);
+ const registration=await newUser(root,'Ana Estudiante','ana@uce.edu.ec');assert.equal(registration.status,201);const cookie=registration.cookie;
+ const mySession=await api(root,'/api/auth/me',{cookie});assert.equal(mySession.data.user.name,'Ana Estudiante');
+ const subject=await api(root,'/api/subjects',{method:'POST',cookie,body:{name:'Ingeniería de Software'}});assert.equal(subject.status,201);
+ const subjectId=subject.data.subject.id;
+ const created=await api(root,'/api/tasks',{method:'POST',cookie,body:{title:'Informe final',subjectId,dueDate:'2026-10-12',priority:'alta',notes:'Subir PDF'}});assert.equal(created.status,201);const id=created.data.task.id;
+ assert.equal((await api(root,'/api/tasks?priority=alta',{cookie})).data.tasks.length,1);
+ assert.equal((await api(root,'/api/tasks?search=Informe',{cookie})).data.tasks.length,1);
+ assert.equal((await api(root,'/api/tasks?search=%25',{cookie})).data.tasks.length,0);
+ assert.equal((await api(root,'/api/tasks?priority=baja',{cookie})).data.tasks.length,0);
+ assert.equal((await api(root,'/api/stats',{cookie})).data.stats.pendientes,1);
+ const updated=await api(root,`/api/tasks/${id}`,{method:'PATCH',cookie,body:{status:'completada',title:'Informe revisado'}});assert.equal(updated.status,200);assert.equal(updated.data.task.title,'Informe revisado');
+ assert.equal((await api(root,'/api/stats',{cookie})).data.stats.completadas,1);
+ assert.equal((await api(root,`/api/tasks/${id}`,{method:'DELETE',cookie})).status,200);
+ assert.equal((await api(root,'/api/stats',{cookie})).data.stats.total,0);
+});
+test('protección multiusuario: no leer, editar ni borrar tareas ajenas',async t=>{const {root,stop}=await startApp();t.after(stop);
+ const userA=await newUser(root,'Ana','a@test.edu');const userB=await newUser(root,'Luis','b@test.edu');
+ const sa=(await api(root,'/api/subjects',{cookie:userA.cookie})).data.subjects[0].id;
+ const sb=(await api(root,'/api/subjects',{cookie:userB.cookie})).data.subjects[0].id;
+ const r=await api(root,'/api/tasks',{method:'POST',cookie:userA.cookie,body:{title:'Tarea privada',subjectId:sa,dueDate:'2026-10-10',priority:'media'}});const id=r.data.task.id;
+ assert.equal((await api(root,'/api/tasks',{cookie:userB.cookie})).data.tasks.length,0);
+ assert.equal((await api(root,`/api/tasks/${id}`,{cookie:userB.cookie})).status,404);
+ assert.equal((await api(root,`/api/tasks/${id}`,{method:'PATCH',cookie:userB.cookie,body:{status:'completada'}})).status,404);
+ assert.equal((await api(root,`/api/tasks/${id}`,{method:'DELETE',cookie:userB.cookie})).status,404);
+ assert.equal((await api(root,'/api/tasks',{method:'POST',cookie:userB.cookie,body:{title:'Materia ajena',subjectId:sa,dueDate:'2026-10-10',priority:'media'}})).status,422);
+ assert.ok(sb>0);
+});
+test('validaciones, sesiones y protección básica',async t=>{const {root,stop}=await startApp();t.after(stop);
+ assert.equal((await api(root,'/api/tasks')).status,401);
+ assert.equal((await api(root,'/api/auth/register',{method:'POST',body:{name:'Ana',email:'a@b.co',password:'123'}})).status,422);
+ const user=await newUser(root,'Ana','ana@test.edu');const cookie=user.cookie;
+ assert.equal((await newUser(root,'Ana','ana@test.edu')).status,409);
+ const id=(await api(root,'/api/subjects',{cookie})).data.subjects[0].id;
+ const bad=await api(root,'/api/tasks',{method:'POST',cookie,body:{title:'',subjectId:id,dueDate:'2026-02-29',priority:'imposible'}});assert.equal(bad.status,422);
+ assert.equal((await api(root,'/api/auth/logout',{method:'POST',cookie})).status,200);
+ assert.equal((await api(root,'/api/auth/me',{cookie})).status,401);
+ assert.equal((await api(root,'/health')).status,200);
+});

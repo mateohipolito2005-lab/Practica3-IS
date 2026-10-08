@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6d51da">
+  <meta name="description" content="UniTask: organiza tareas, fechas y materias desde un solo lugar.">
+  <title>UniTask | Mi espacio académico</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="authScreen" class="auth-shell">
+    <section class="auth-showcase" aria-label="Bienvenida">
+      <div class="brand"><span class="brand-icon">✦</span> UniTask<span class="brand-dot">.</span></div>
+      <div class="auth-hero">
+        <span class="eyebrow">TU UNIVERSIDAD · TUS METAS</span>
+        <h1>Tu semestre,<br><em>en orden.</em></h1>
+        <p>Organiza materias, prioriza entregas y transforma tus pendientes en logros.</p>
+        <div class="hero-preview" aria-hidden="true"><span>📚</span><div><strong>Vas por buen camino</strong><small>Organiza una tarea a la vez</small></div><span class="spark">✳</span></div>
+      </div>
+      <div class="showcase-foot">Menos estrés. Más enfoque. <span>✳ ✳ ✳</span></div>
+    </section>
+    <section class="auth-panel">
+      <div class="auth-card">
+        <span class="pill">✦ Tu nuevo aliado académico</span>
+        <h2 id="authTitle">¡Qué bueno verte!</h2>
+        <p id="authSubtitle">Ingresa a tu espacio para continuar.</p>
+        <form id="authForm" class="form-stack">
+          <label id="nameGroup" class="field hidden"><span>Tu nombre</span><input id="nameInput" type="text" maxlength="60" autocomplete="name" placeholder="¿Cómo te llamas?"></label>
+          <label class="field"><span>Correo electrónico</span><input id="emailInput" type="email" autocomplete="email" maxlength="254" required placeholder="nombre@universidad.edu"></label>
+          <label class="field"><span>Contraseña</span><input id="passwordInput" type="password" autocomplete="current-password" minlength="8" maxlength="128" required placeholder="Mínimo 8 caracteres"></label>
+          <button class="btn btn-primary btn-wide" id="authSubmit" type="submit">Iniciar sesión <span>→</span></button>
+        </form>
+        <p class="auth-switch"><span id="authToggleText">¿Primera vez aquí?</span> <button type="button" class="link-button" id="authToggle">Crear una cuenta</button></p>
+        <div class="privacy-caption">🔒 Tus tareas son privadas y solo tú puedes verlas.</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="appScreen" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand sidebar-brand"><span class="brand-icon">✦</span> UniTask<span class="brand-dot">.</span></div>
+      <div class="nav-label">ESPACIO DE TRABAJO</div>
+      <nav aria-label="Navegación principal">
+        <button id="navAll" class="nav-button selected" type="button" data-view="all">◫ <span>Mis tareas</span></button>
+        <button class="nav-button" type="button" data-view="pending">◷ <span>Pendientes</span></button>
+        <button class="nav-button" type="button" data-view="completed">✓ <span>Completadas</span></button>
+      </nav>
+      <div class="nav-label second-label">MIS MATERIAS</div>
+      <div id="subjectLinks" class="subject-nav"></div>
+      <button class="sidebar-add" id="addSubjectSidebar" type="button">＋ Añadir materia</button>
+      <div class="sidebar-bottom"><div class="avatar" id="sidebarAvatar">U</div><div class="sidebar-user"><strong id="userName">Estudiante</strong><small>Mi cuenta personal</small></div><button id="logoutBtn" class="logout" title="Cerrar sesión" aria-label="Cerrar sesión" type="button">↪</button></div>
+    </aside>
+    <main class="main-area">
+      <header class="top-bar"><div class="breadcrumb">Mi espacio <span>/</span> <strong>Resumen académico</strong></div><span class="top-date" id="todayLabel"></span></header>
+      <div class="content">
+        <div class="welcome"><div><span class="eyebrow purple">UN DÍA A LA VEZ ✦</span><h1>¡Hola, <span id="helloName">estudiante</span>! <span class="wave">👋</span></h1><p>Aquí tienes todo lo que necesitas para avanzar hoy.</p></div><button id="newTaskButton" class="btn btn-primary" type="button">＋ Nueva tarea</button></div>
+        <div class="stats-grid" aria-label="Resumen de tareas">
+          <div class="stat-card"><div class="stat-icon lavender">☷</div><span>Total de tareas</span><strong id="statTotal">0</strong><small>Tu semestre, bajo control</small></div>
+          <div class="stat-card"><div class="stat-icon peach">◷</div><span>Por hacer</span><strong id="statPending">0</strong><small>Un paso a la vez</small></div>
+          <div class="stat-card"><div class="stat-icon mint">✓</div><span>Completadas</span><strong id="statCompleted">0</strong><small>¡Sigue así!</small></div>
+          <div class="stat-card"><div class="stat-icon pink">!</div><span>Vencidas</span><strong id="statOverdue">0</strong><small>Necesitan tu atención</small></div>
+        </div>
+        <section class="task-section" aria-labelledby="taskHeading">
+          <div class="section-heading"><div><h2 id="taskHeading">Mis actividades <span>✦</span></h2><p>Todo lo importante en un solo lugar.</p></div><span class="task-counter" id="resultCounter">0 tareas</span></div>
+          <div class="filters"><label class="search-wrap"><span class="sr-only">Buscar tarea</span><span aria-hidden="true">⌕</span><input id="searchTasks" type="search" placeholder="Buscar una tarea..." maxlength="100"></label><label class="select-wrap"><span class="sr-only">Filtrar por materia</span><select id="subjectFilter"><option value="">Todas las materias</option></select></label><label class="select-wrap"><span class="sr-only">Filtrar por prioridad</span><select id="priorityFilter"><option value="">Todas las prioridades</option><option value="alta">Prioridad alta</option><option value="media">Prioridad media</option><option value="baja">Prioridad baja</option></select></label><label class="select-wrap"><span class="sr-only">Filtrar por estado</span><select id="statusFilter"><option value="">Todos los estados</option><option value="pendiente">Pendientes</option><option value="completada">Completadas</option></select></label></div>
+          <div id="taskList" class="task-list"><div class="empty-state"><div class="empty-icon">✎</div><h3>Aún no tienes tareas</h3><p>Empieza creando tu primera actividad universitaria.</p></div></div>
+        </section>
+        <footer class="main-footer">Hecho para ayudarte a organizar mejor tu vida universitaria. <span>UniTask © 2026</span></footer>
+      </div>
+    </main>
+  </div>
+  <dialog id="taskDialog" class="modal"><form id="taskForm" class="modal-inner"><div class="modal-top"><div><span class="eyebrow purple">ORGANIZA TU SEMESTRE</span><h2 id="taskDialogTitle">Nueva tarea</h2></div><button class="icon-button" id="closeTaskDialog" type="button" aria-label="Cerrar">×</button></div><label class="field"><span>Título de la tarea *</span><input id="taskTitle" required maxlength="100" placeholder="Ej. Entregar proyecto final"></label><div class="form-row"><label class="field"><span>Materia *</span><select id="taskSubject" required></select></label><label class="field"><span>Fecha de entrega *</span><input type="date" id="taskDate" required></label></div><div class="form-row"><label class="field"><span>Prioridad *</span><select id="taskPriority"><option value="media">Media</option><option value="alta">Alta</option><option value="baja">Baja</option></select></label><label class="field"><span>Estado</span><select id="taskStatus"><option value="pendiente">Pendiente</option><option value="completada">Completada</option></select></label></div><label class="field"><span>Notas (opcional)</span><textarea id="taskNotes" maxlength="1000" rows="3" placeholder="Detalles que no quieres olvidar..."></textarea></label><div class="modal-actions"><button class="btn btn-light" id="cancelTaskDialog" type="button">Cancelar</button><button class="btn btn-primary" type="submit" id="saveTaskButton">Guardar tarea →</button></div></form></dialog>
+  <dialog id="subjectDialog" class="modal small-modal"><form class="modal-inner" id="subjectForm"><div class="modal-top"><div><span class="eyebrow purple">PERSONALIZA TU ESPACIO</span><h2>Nueva materia</h2></div><button type="button" id="closeSubjectDialog" class="icon-button" aria-label="Cerrar">×</button></div><label class="field"><span>Nombre de la materia</span><input id="subjectName" required maxlength="60" placeholder="Ej. Ingeniería de Software"></label><div class="modal-actions"><button class="btn btn-light" type="button" id="cancelSubjectDialog">Cancelar</button><button class="btn btn-primary" type="submit">Añadir materia →</button></div></form></dialog>
+</body>
+</html>

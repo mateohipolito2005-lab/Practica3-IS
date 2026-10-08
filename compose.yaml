@@ -1,0 +1,15 @@
+services:
+  unitask:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_PATH: /app/data/unitask.sqlite
+      # Para HTTPS detrás de proxy configurar PUBLIC_ORIGIN=https://dominio.example
+    volumes:
+      - unitask_data:/app/data
+    restart: unless-stopped
+volumes:
+  unitask_data:

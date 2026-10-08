@@ -1,0 +1,11 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const {isValidDate,validateTask,todayInEcuador,isOverdue} = require('../src/validators');
+const {passwordHash,verifyPassword} = require('../src/server');
+const valid = {title:'Estudiar cálculo',subjectId:1,dueDate:'2026-10-10',priority:'alta'};
+test('fechas válidas e inválidas, incluyendo año bisiesto',()=>{assert.equal(isValidDate('2024-02-29'),true);assert.equal(isValidDate('2026-02-29'),false);assert.equal(isValidDate('2026-13-01'),false);assert.equal(isValidDate('10/10/2026'),false);});
+test('valida datos necesarios de tarea',()=>{assert.deepEqual(validateTask(valid),[]);assert.ok(validateTask({...valid,title:'   '}).length);assert.ok(validateTask({...valid,priority:'urgente'}).length);assert.ok(validateTask({...valid,notes:'x'.repeat(1001)}).length);});
+test('marca vencimiento solamente cuando esta pendiente',()=>{assert.equal(isOverdue({status:'pendiente',due_date:'2026-10-01'},'2026-10-07'),true);assert.equal(isOverdue({status:'completada',due_date:'2026-10-01'},'2026-10-07'),false);assert.equal(isOverdue({status:'pendiente',due_date:'2026-10-07'},'2026-10-07'),false);});
+test('fecha local ecuatoriana sin depender del huso del servidor',()=>{assert.equal(todayInEcuador(new Date('2026-10-08T02:00:00Z')),'2026-10-07');});
+test('contraseñas con hash salado y verificación segura',()=>{const hash=passwordHash('secreto123');assert.equal(hash.includes('secreto123'),false);assert.equal(verifyPassword('secreto123',hash),true);assert.equal(verifyPassword('erronea12',hash),false);});
