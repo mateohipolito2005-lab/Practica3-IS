@@ -7,6 +7,15 @@ function isValidDate(date) {
 function validText(value, min, max) {
   return typeof value === 'string' && value.trim().length >= min && value.trim().length <= max;
 }
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  return pattern.test(email);
+}
 function validateTask(input) {
   const issues = [];
   if (!input || typeof input !== 'object' || Array.isArray(input)) return ['Se requiere un objeto de tarea.'];
@@ -26,4 +35,11 @@ function todayInEcuador(now = new Date()) {
 function isOverdue(task, today = todayInEcuador()) {
   return task.status === 'pendiente' && task.due_date < today;
 }
-module.exports = { isValidDate, validateTask, todayInEcuador, isOverdue, validText };
+module.exports = {
+  isValidDate,
+  validateTask,
+  todayInEcuador,
+  isOverdue,
+  validText,
+  isValidEmail
+};
