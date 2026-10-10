@@ -7,6 +7,10 @@ function isValidDate(date) {
 function validText(value, min, max) {
   return typeof value === 'string' && value.trim().length >= min && value.trim().length <= max;
 }
+function isStrongPassword(password) {
+  return typeof password === 'string' &&
+         password.length >= 8;
+}
 function validateTask(input) {
   const issues = [];
   if (!input || typeof input !== 'object' || Array.isArray(input)) return ['Se requiere un objeto de tarea.'];
@@ -26,4 +30,11 @@ function todayInEcuador(now = new Date()) {
 function isOverdue(task, today = todayInEcuador()) {
   return task.status === 'pendiente' && task.due_date < today;
 }
-module.exports = { isValidDate, validateTask, todayInEcuador, isOverdue, validText };
+module.exports = {
+  isValidDate,
+  validateTask,
+  todayInEcuador,
+  isOverdue,
+  validText,
+  isStrongPassword
+};
