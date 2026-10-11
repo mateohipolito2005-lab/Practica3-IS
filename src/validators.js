@@ -16,6 +16,11 @@ function isValidEmail(email) {
 
   return pattern.test(email);
 }
+function isValidSubjectName(name) {
+  return typeof name === 'string' &&
+         name.trim().length >= 3 &&
+         name.trim().length <= 100;
+}
 function validateTask(input) {
   const issues = [];
   if (!input || typeof input !== 'object' || Array.isArray(input)) return ['Se requiere un objeto de tarea.'];
@@ -41,5 +46,6 @@ module.exports = {
   todayInEcuador,
   isOverdue,
   validText,
-  isValidEmail
+  isValidEmail,
+  isValidSubjectName
 };
