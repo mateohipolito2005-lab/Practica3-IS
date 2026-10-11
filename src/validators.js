@@ -50,3 +50,4 @@ module.exports = {
 function esTextoValido(texto) {
     return typeof texto === 'string' && texto.trim().length > 0;
 }
+
