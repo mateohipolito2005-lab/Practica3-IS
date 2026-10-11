@@ -36,10 +36,17 @@ function isOverdue(task, today = todayInEcuador()) {
   return task.status === 'pendiente' && task.due_date < today;
 }
 module.exports = {
-  isValidDate,
-  validateTask,
-  todayInEcuador,
-  isOverdue,
-  validText,
-  isValidEmail
+    isValidaDate,
+    validateTask,
+    todayInEcuador,
+    isOverdue,
+    validText,
+    isValidateEmail,
+    esTextoValido // <--- Agregamos tu función aquí
 };
+
+// Mejora de validación realizada por Snaider
+// Permite verificar que un texto no esté vacío ni contenga solo espacios
+function esTextoValido(texto) {
+    return typeof texto === 'string' && texto.trim().length > 0;
+}
